@@ -1,0 +1,42 @@
+{
+  "name": "change-image-color",
+  "version": "0.1.0",
+  "description": "A Node.js CLI that recolors PNG/JPG images based on a hex color mapping (RGB nearest-neighbor matching, alpha preserved).",
+  "type": "module",
+  "bin": {
+    "change-image-color": "./dist/cli.js"
+  },
+  "main": "./dist/cli.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "image",
+    "color",
+    "recolor",
+    "cli",
+    "sharp",
+    "png",
+    "jpg"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
