@@ -187,11 +187,11 @@ async function runDirectory(
 async function main(): Promise<void> {
   const program = new Command();
   program
-    .name("change-image-color")
+    .name("change-image-theme")
     .description(
-      "Recolor PNG/JPG images by HSL hue-shifting pixels whose hue is close to a source brand color. " +
-        "Saturation and lightness are preserved, so dark/light variants of the same brand color are recolored consistently. " +
-        "Low-saturation pixels (whites/grays/blacks) and far-hue pixels are kept unchanged.",
+      "Apply a color theme to PNG/JPG images: HSL hue-shift pixels near each source brand color toward the target. " +
+        "Saturation and lightness are preserved so light/dark variants stay consistent. " +
+        "Low-saturation (neutral) and far-hue pixels are left unchanged.",
     )
     .requiredOption("-i, --input <path>", "input image file or directory")
     .requiredOption("-o, --output <path>", "output image file or directory")
