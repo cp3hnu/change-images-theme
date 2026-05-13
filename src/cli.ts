@@ -200,12 +200,12 @@ async function main(): Promise<void> {
       'color mapping: path to a JSON file, or inline JSON like \'{"#514cf9":"#f05416"}\'',
     )
     .option(
-      "--hue-radius <degrees>",
+      "-r, --hue-radius <degrees>",
       "hue distance (0-180) within which a pixel is shifted toward the target hue (smoothstep falloff at the edge)",
       String(DEFAULT_HUE_RADIUS),
     )
     .option(
-      "--saturation-threshold <number>",
+      "-t, --saturation-threshold <number>",
       "pixels with HSL saturation below this value (0-1) are treated as neutrals and preserved",
       String(DEFAULT_SATURATION_THRESHOLD),
     )
@@ -234,7 +234,7 @@ async function main(): Promise<void> {
   const hueRadius = Number(opts.hueRadius);
   if (!Number.isFinite(hueRadius) || hueRadius <= 0 || hueRadius > 180) {
     throw new Error(
-      `--hue-radius must be in (0, 180], got: ${opts.hueRadius}`,
+      `-r/--hue-radius must be in (0, 180], got: ${opts.hueRadius}`,
     );
   }
 
@@ -245,7 +245,7 @@ async function main(): Promise<void> {
     saturationThreshold > 1
   ) {
     throw new Error(
-      `--saturation-threshold must be in [0, 1], got: ${opts.saturationThreshold}`,
+      `-t/--saturation-threshold must be in [0, 1], got: ${opts.saturationThreshold}`,
     );
   }
 

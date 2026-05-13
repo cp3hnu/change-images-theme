@@ -59,25 +59,25 @@ cit \
 
 ### 调整色相容差
 
-`--hue-radius` 控制"多近的色相视为同一品牌色"，单位为度（0–180）：
+`-r` / `--hue-radius` 控制"多近的色相视为同一品牌色"，单位为度（0–180）：
 
 ```bash
 # 只换非常接近源色相的像素（保守）
-cit -i in.png -o out.png -m map.json --hue-radius 15
+cit -i in.png -o out.png -m map.json -r 15
 
 # 默认：能覆盖品牌色变体，不波及邻近色相
 cit -i in.png -o out.png -m map.json
 
 # 连邻近色相也调换（宽松）
-cit -i in.png -o out.png -m map.json --hue-radius 60
+cit -i in.png -o out.png -m map.json -r 60
 ```
 
 ### 中性色保留阈值
 
-`--saturation-threshold` 默认 `0.10`，HSL 饱和度低于该值的像素被视为中性色保留。如果你的品牌色变体里有非常浅的色调被误判为中性色，可以调小该值：
+`-t` / `--saturation-threshold` 默认 `0.10`，HSL 饱和度低于该值的像素被视为中性色保留。如果你的品牌色变体里有非常浅的色调被误判为中性色，可以调小该值：
 
 ```bash
-cit -i in.png -o out.png -m map.json --saturation-threshold 0.05
+cit -i in.png -o out.png -m map.json -t 0.05
 ```
 
 特殊场景：如果你确实要把白/灰也换掉，用 `--no-preserve-neutrals`：
@@ -112,8 +112,8 @@ OK  banner1.png (1200x720, affected 857302/858480 (skipped: neutral=263, far=743
 | `-i, --input <path>` | – | 输入文件或目录（必填） |
 | `-o, --output <path>` | – | 输出文件或目录（必填；输入为目录时此项必须是目录） |
 | `-m, --map <jsonOrPath>` | – | 映射表：JSON 文件路径，或以 `{` 开头的内联 JSON |
-| `--hue-radius <degrees>` | `30` | 色相距离半径（0–180°），范围内的像素会向目标色相旋转，边缘 smoothstep 衰减 |
-| `--saturation-threshold <number>` | `0.10` | HSL 饱和度低于此值的像素视为中性色，保留不变（范围 0–1） |
+| `-r, --hue-radius <degrees>` | `30` | 色相距离半径（0–180°），范围内的像素会向目标色相旋转，边缘 smoothstep 衰减 |
+| `-t, --saturation-threshold <number>` | `0.10` | HSL 饱和度低于此值的像素视为中性色，保留不变（范围 0–1） |
 | `--no-preserve-neutrals` | – | 禁用中性色保留 |
 | `--no-recursive` | – | 目录模式下关闭递归 |
 | `-c, --concurrency <number>` | CPU 核心数 | 批量并发数（目录模式） |
