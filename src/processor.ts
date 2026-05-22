@@ -2,11 +2,11 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
-import { hslToRgb, rgbToHsl } from "./color.js";
+import { oklchToRgb, rgbToOklch } from "./color.js";
 import { findNearestByHue } from "./mapper.js";
 import {
+  DEFAULT_CHROMA_THRESHOLD,
   DEFAULT_HUE_RADIUS,
-  DEFAULT_SATURATION_THRESHOLD,
   type PreparsedMap,
   type ProcessOptions,
   type ProcessResult,
@@ -44,15 +44,16 @@ export async function processFile(
 
   const hueRadius = opts.hueRadius ?? DEFAULT_HUE_RADIUS;
   if (!Number.isFinite(hueRadius) || hueRadius <= 0 || hueRadius > 180) {
-    throw new Error(
-      `hueRadius must be in (0, 180], got ${hueRadius}`,
-    );
+    throw new Error(`hueRadius must be in (0, 180], got ${hueRadius}`);
   }
-  const satThreshold =
-    opts.saturationThreshold ?? DEFAULT_SATURATION_THRESHOLD;
-  if (!Number.isFinite(satThreshold) || satThreshold < 0 || satThreshold > 1) {
+  const chromaThreshold = opts.chromaThreshold ?? DEFAULT_CHROMA_THRESHOLD;
+  if (
+    !Number.isFinite(chromaThreshold) ||
+    chromaThreshold < 0 ||
+    chromaThreshold > 0.5
+  ) {
     throw new Error(
-      `saturationThreshold must be in [0, 1], got ${satThreshold}`,
+      `chromaThreshold must be in [0, 0.5], got ${chromaThreshold}`,
     );
   }
   const preserveNeutrals = opts.preserveNeutrals !== false;
@@ -77,14 +78,14 @@ export async function processFile(
     const g = data[i + 1];
     const b = data[i + 2];
 
-    const hsl = rgbToHsl(r, g, b);
+    const lch = rgbToOklch(r, g, b);
 
-    if (preserveNeutrals && hsl.s < satThreshold) {
+    if (preserveNeutrals && lch.C < chromaThreshold) {
       pixelsSkippedNeutral++;
       continue;
     }
 
-    const { index, hueDist } = findNearestByHue(hsl.h, map.sourcesHsl);
+    const { index, hueDist } = findNearestByHue(lch.h, map.sourcesOklch);
     if (hueDist >= hueRadius) {
       pixelsSkippedFar++;
       continue;
@@ -93,8 +94,8 @@ export async function processFile(
     const t = hueDist / hueRadius;
     const w = 1 - t * t * (3 - 2 * t);
 
-    const newH = hsl.h + map.hueDeltas[index];
-    const replaced = hslToRgb(newH, hsl.s, hsl.l);
+    const newH = lch.h + map.hueDeltas[index];
+    const replaced = oklchToRgb(lch.L, lch.C, newH);
 
     data[i] = Math.round(r * (1 - w) + replaced.r * w);
     data[i + 1] = Math.round(g * (1 - w) + replaced.g * w);

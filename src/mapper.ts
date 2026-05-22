@@ -2,7 +2,7 @@ import {
   hexToRgb,
   hueDistance,
   isValidHex,
-  rgbToHsl,
+  rgbToOklch,
   shortestHueDelta,
 } from "./color.js";
 import type { ColorMap, PreparsedMap } from "./types.js";
@@ -15,8 +15,8 @@ export function parseColorMap(map: ColorMap): PreparsedMap {
 
   const sourcesRgb: PreparsedMap["sourcesRgb"] = [];
   const targetsRgb: PreparsedMap["targetsRgb"] = [];
-  const sourcesHsl: PreparsedMap["sourcesHsl"] = [];
-  const targetsHsl: PreparsedMap["targetsHsl"] = [];
+  const sourcesOklch: PreparsedMap["sourcesOklch"] = [];
+  const targetsOklch: PreparsedMap["targetsOklch"] = [];
   const hueDeltas: number[] = [];
   const originalKeys: string[] = [];
 
@@ -29,21 +29,21 @@ export function parseColorMap(map: ColorMap): PreparsedMap {
     }
     const sRgb = hexToRgb(src);
     const tRgb = hexToRgb(tgt);
-    const sHsl = rgbToHsl(sRgb.r, sRgb.g, sRgb.b);
-    const tHsl = rgbToHsl(tRgb.r, tRgb.g, tRgb.b);
+    const sLch = rgbToOklch(sRgb.r, sRgb.g, sRgb.b);
+    const tLch = rgbToOklch(tRgb.r, tRgb.g, tRgb.b);
     sourcesRgb.push(sRgb);
     targetsRgb.push(tRgb);
-    sourcesHsl.push(sHsl);
-    targetsHsl.push(tHsl);
-    hueDeltas.push(shortestHueDelta(sHsl.h, tHsl.h));
+    sourcesOklch.push(sLch);
+    targetsOklch.push(tLch);
+    hueDeltas.push(shortestHueDelta(sLch.h, tLch.h));
     originalKeys.push(src);
   }
 
   return {
     sourcesRgb,
     targetsRgb,
-    sourcesHsl,
-    targetsHsl,
+    sourcesOklch,
+    targetsOklch,
     hueDeltas,
     originalKeys,
   };
@@ -56,7 +56,7 @@ export interface NearestHueResult {
 
 export function findNearestByHue(
   pixelHue: number,
-  sources: PreparsedMap["sourcesHsl"],
+  sources: PreparsedMap["sourcesOklch"],
 ): NearestHueResult {
   let bestIdx = 0;
   let bestDist = Infinity;
