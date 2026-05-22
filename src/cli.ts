@@ -17,7 +17,6 @@ import {
 } from "./types.js";
 
 interface CliOptions {
-  input: string;
   output: string;
   map: string;
   hueRadius?: string;
@@ -193,7 +192,7 @@ async function main(): Promise<void> {
         "Saturation and lightness are preserved so light/dark variants stay consistent. " +
         "Low-saturation (neutral) and far-hue pixels are left unchanged.",
     )
-    .requiredOption("-i, --input <path>", "input image file or directory")
+    .argument("<input>", "input image file or directory")
     .requiredOption("-o, --output <path>", "output image file or directory")
     .requiredOption(
       "-m, --map <jsonOrPath>",
@@ -226,6 +225,7 @@ async function main(): Promise<void> {
     .showHelpAfterError();
 
   program.parse(process.argv);
+  const input = program.args[0] as string;
   const opts = program.opts<CliOptions>();
 
   const rawMap = await loadColorMap(opts.map);
@@ -266,12 +266,12 @@ async function main(): Promise<void> {
     verbose,
   };
 
-  const inputAbs = path.resolve(opts.input);
+  const inputAbs = path.resolve(input);
   const outputAbs = path.resolve(opts.output);
 
   const inStat = await pathStatSafe(inputAbs);
   if (!inStat) {
-    throw new Error(`Input path does not exist: ${opts.input}`);
+    throw new Error(`Input path does not exist: ${input}`);
   }
 
   if (inStat.isFile()) {
@@ -292,7 +292,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  throw new Error(`Input path is neither file nor directory: ${opts.input}`);
+  throw new Error(`Input path is neither file nor directory: ${input}`);
 }
 
 main().catch((err) => {
