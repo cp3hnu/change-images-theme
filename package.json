@@ -1,15 +1,26 @@
 {
-  "name": "change-image-theme",
-  "version": "0.1.0",
+  "name": "change-images-theme",
+  "version": "1.0.0",
   "description": "A Node.js CLI that applies a visual theme to PNG/JPG assets: shift brand hues from a hex color map while preserving saturation/lightness and alpha (rebrand / white-label friendly).",
+  "author": "Wei Zhao <cp3hnu@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/cp3hnu/change-images-theme#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cp3hnu/change-images-theme.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cp3hnu/change-images-theme/issues"
+  },
   "type": "module",
   "bin": {
     "cit": "./dist/cli.js"
   },
   "main": "./dist/cli.js",
   "files": [
-    "dist",
-    "README.md"
+    "dist/**/*.js",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
@@ -19,7 +30,7 @@
     "prepublishOnly": "npm run build"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "keywords": [
     "image",
@@ -33,7 +44,6 @@
     "png",
     "jpg"
   ],
-  "license": "MIT",
   "dependencies": {
     "commander": "^12.1.0",
     "sharp": "^0.33.5"

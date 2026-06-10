@@ -13,7 +13,7 @@ import {
   type ColorMap,
   type PreparsedMap,
   type ProcessOptions,
-  type ProcessResult,
+  type ProcessResult
 } from "./types.js";
 
 interface CliOptions {
@@ -35,7 +35,7 @@ async function loadColorMap(mapArg: string): Promise<ColorMap> {
       return JSON.parse(trimmed) as ColorMap;
     } catch (err) {
       throw new Error(
-        `Failed to parse inline JSON map: ${(err as Error).message}`,
+        `Failed to parse inline JSON map: ${(err as Error).message}`
       );
     }
   }
@@ -44,14 +44,14 @@ async function loadColorMap(mapArg: string): Promise<ColorMap> {
     raw = await fs.readFile(trimmed, "utf8");
   } catch (err) {
     throw new Error(
-      `Failed to read map file "${trimmed}": ${(err as Error).message}`,
+      `Failed to read map file "${trimmed}": ${(err as Error).message}`
     );
   }
   try {
     return JSON.parse(raw) as ColorMap;
   } catch (err) {
     throw new Error(
-      `Failed to parse map file "${trimmed}" as JSON: ${(err as Error).message}`,
+      `Failed to parse map file "${trimmed}" as JSON: ${(err as Error).message}`
     );
   }
 }
@@ -78,17 +78,17 @@ async function runSingleFile(
   outputPath: string,
   map: PreparsedMap,
   procOpts: ProcessOptions,
-  verbose: boolean,
+  verbose: boolean
 ): Promise<void> {
   if (!isImageFile(inputPath)) {
     throw new Error(
-      `Input file is not a supported image (.png/.jpg/.jpeg): ${inputPath}`,
+      `Input file is not a supported image (.png/.jpg/.jpeg): ${inputPath}`
     );
   }
   const result = await processFile(inputPath, outputPath, map, procOpts);
   console.log(
     `OK  ${inputPath} -> ${outputPath} ` +
-      `(${result.width}x${result.height}, ${formatSummary(result)})`,
+      `(${result.width}x${result.height}, ${formatSummary(result)})`
   );
   if (verbose) {
     for (const [src, count] of Object.entries(result.hitsBySource)) {
@@ -100,7 +100,7 @@ async function runSingleFile(
 async function runConcurrent<T, R>(
   items: T[],
   concurrency: number,
-  worker: (item: T, index: number) => Promise<R>,
+  worker: (item: T, index: number) => Promise<R>
 ): Promise<R[]> {
   const results: R[] = new Array(items.length);
   let next = 0;
@@ -114,7 +114,7 @@ async function runConcurrent<T, R>(
           if (idx >= items.length) return;
           results[idx] = await worker(items[idx], idx);
         }
-      })(),
+      })()
     );
   }
   await Promise.all(runners);
@@ -128,12 +128,12 @@ async function runDirectory(
   procOpts: ProcessOptions,
   recursive: boolean,
   concurrency: number,
-  verbose: boolean,
+  verbose: boolean
 ): Promise<void> {
   const outStat = await pathStatSafe(outputDir);
   if (outStat && !outStat.isDirectory()) {
     throw new Error(
-      `Output path "${outputDir}" exists and is not a directory (required when input is a directory)`,
+      `Output path "${outputDir}" exists and is not a directory (required when input is a directory)`
     );
   }
   await fs.mkdir(outputDir, { recursive: true });
@@ -141,20 +141,20 @@ async function runDirectory(
   const entries = await listImages(inputDir, outputDir, { recursive });
   if (entries.length === 0) {
     console.log(
-      `No images found in ${inputDir}${recursive ? " (recursive)" : ""}.`,
+      `No images found in ${inputDir}${recursive ? " (recursive)" : ""}.`
     );
     return;
   }
 
   console.log(
-    `Found ${entries.length} image(s). Processing with concurrency=${concurrency}...`,
+    `Found ${entries.length} image(s). Processing with concurrency=${concurrency}...`
   );
 
   let succeeded = 0;
   let failed = 0;
   let nextIndex = 0;
 
-  await runConcurrent(entries, concurrency, async (entry) => {
+  await runConcurrent(entries, concurrency, async entry => {
     const idx = ++nextIndex;
     const tag = `[${idx}/${entries.length}]`;
     try {
@@ -162,10 +162,12 @@ async function runDirectory(
         entry.inputPath,
         entry.outputPath,
         map,
-        procOpts,
+        procOpts
       );
       succeeded++;
-      console.log(`${tag} OK  ${entry.relativePath} (${formatSummary(result)})`);
+      console.log(
+        `${tag} OK  ${entry.relativePath} (${formatSummary(result)})`
+      );
       if (verbose) {
         for (const [src, count] of Object.entries(result.hitsBySource)) {
           console.log(`        ${src}: ${count} px`);
@@ -174,7 +176,7 @@ async function runDirectory(
     } catch (err) {
       failed++;
       console.error(
-        `${tag} ERR ${entry.relativePath}: ${(err as Error).message}`,
+        `${tag} ERR ${entry.relativePath}: ${(err as Error).message}`
       );
     }
   });
@@ -186,40 +188,40 @@ async function runDirectory(
 async function main(): Promise<void> {
   const program = new Command();
   program
-    .name("change-image-theme")
+    .name("change-images-theme")
     .description(
       "Apply a color theme to PNG/JPG images: HSL hue-shift pixels near each source brand color toward the target. " +
         "Saturation and lightness are preserved so light/dark variants stay consistent. " +
-        "Low-saturation (neutral) and far-hue pixels are left unchanged.",
+        "Low-saturation (neutral) and far-hue pixels are left unchanged."
     )
     .argument("<input>", "input image file or directory")
     .requiredOption("-o, --output <path>", "output image file or directory")
     .requiredOption(
       "-m, --map <jsonOrPath>",
-      'color mapping: path to a JSON file, or inline JSON like \'{"#514cf9":"#f05416"}\'',
+      'color mapping: path to a JSON file, or inline JSON like \'{"#514cf9":"#f05416"}\''
     )
     .option(
       "-r, --hue-radius <degrees>",
       "hue distance (0-180) within which a pixel is shifted toward the target hue (smoothstep falloff at the edge)",
-      String(DEFAULT_HUE_RADIUS),
+      String(DEFAULT_HUE_RADIUS)
     )
     .option(
       "-t, --saturation-threshold <number>",
       "pixels with HSL saturation below this value (0-1) are treated as neutrals and preserved",
-      String(DEFAULT_SATURATION_THRESHOLD),
+      String(DEFAULT_SATURATION_THRESHOLD)
     )
     .option(
       "--no-preserve-neutrals",
-      "disable neutral preservation (also recolor low-saturation pixels)",
+      "disable neutral preservation (also recolor low-saturation pixels)"
     )
     .option(
       "--no-recursive",
-      "do not recurse into subdirectories when input is a directory",
+      "do not recurse into subdirectories when input is a directory"
     )
     .option(
       "-c, --concurrency <number>",
       "number of files to process in parallel (directory mode)",
-      String(Math.max(1, os.cpus().length)),
+      String(Math.max(1, os.cpus().length))
     )
     .option("-v, --verbose", "print per-source pixel hit counts", false)
     .showHelpAfterError();
@@ -234,7 +236,7 @@ async function main(): Promise<void> {
   const hueRadius = Number(opts.hueRadius);
   if (!Number.isFinite(hueRadius) || hueRadius <= 0 || hueRadius > 180) {
     throw new Error(
-      `-r/--hue-radius must be in (0, 180], got: ${opts.hueRadius}`,
+      `-r/--hue-radius must be in (0, 180], got: ${opts.hueRadius}`
     );
   }
 
@@ -245,7 +247,7 @@ async function main(): Promise<void> {
     saturationThreshold > 1
   ) {
     throw new Error(
-      `-t/--saturation-threshold must be in [0, 1], got: ${opts.saturationThreshold}`,
+      `-t/--saturation-threshold must be in [0, 1], got: ${opts.saturationThreshold}`
     );
   }
 
@@ -263,7 +265,7 @@ async function main(): Promise<void> {
     hueRadius,
     saturationThreshold,
     preserveNeutrals,
-    verbose,
+    verbose
   };
 
   const inputAbs = path.resolve(input);
@@ -287,7 +289,7 @@ async function main(): Promise<void> {
       procOpts,
       recursive,
       concurrency,
-      verbose,
+      verbose
     );
     return;
   }
@@ -295,7 +297,7 @@ async function main(): Promise<void> {
   throw new Error(`Input path is neither file nor directory: ${input}`);
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error(`Error: ${(err as Error).message}`);
   process.exit(1);
 });

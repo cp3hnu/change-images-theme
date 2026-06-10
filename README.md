@@ -1,4 +1,4 @@
-# change-image-theme
+# change-images-theme
 
 一个用于给 PNG/JPG 资源 **换主题 / 换肤** 的 Node.js CLI：用 hex 颜色映射表把品牌主色及其明暗变体整体迁到新色相，针对 **品牌重塑（rebrand）、白标、多主题皮肤** 比单纯「逐像素换色」更贴切。算法在 HSL 空间按色相归类再旋转 hue，保留每个像素原本的饱和度与明度。
 
@@ -17,7 +17,7 @@ npm run build
 npm link
 ```
 
-发布到 npm 后包名为 `change-image-theme`；本地开发可用 `npx change-image-theme …`（与全局的 `cit` 等价，均指向同一入口）。
+发布到 npm 后包名为 `change-images-theme`；本地开发可用 `npx change-images-theme …`（与全局的 `cit` 等价，均指向同一入口）。
 
 开发模式直接跑 TS 源码：
 
