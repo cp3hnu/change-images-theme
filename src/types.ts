@@ -4,6 +4,12 @@ export interface RGB {
   b: number;
 }
 
+export interface HSL {
+  h: number;
+  s: number;
+  l: number;
+}
+
 export interface OKLCH {
   L: number;
   C: number;
@@ -15,15 +21,18 @@ export type ColorMap = Record<string, string>;
 export interface PreparsedMap {
   sourcesRgb: RGB[];
   targetsRgb: RGB[];
+  sourcesHsl: HSL[];
+  targetsHsl: HSL[];
   sourcesOklch: OKLCH[];
   targetsOklch: OKLCH[];
+  /** OKLCH hue delta (source → target) for perceptual rotation */
   hueDeltas: number[];
   originalKeys: string[];
 }
 
 export interface ProcessOptions {
   hueRadius?: number;
-  chromaThreshold?: number;
+  saturationThreshold?: number;
   preserveNeutrals?: boolean;
   verbose?: boolean;
 }
@@ -42,4 +51,4 @@ export interface ProcessResult {
 }
 
 export const DEFAULT_HUE_RADIUS = 30;
-export const DEFAULT_CHROMA_THRESHOLD = 0.04;
+export const DEFAULT_SATURATION_THRESHOLD = 0.1;

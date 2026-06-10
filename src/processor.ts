@@ -2,11 +2,11 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
-import { oklchToRgb, rgbToOklch } from "./color.js";
+import { oklchToRgb, rgbToHsl, rgbToOklch } from "./color.js";
 import { findNearestByHue } from "./mapper.js";
 import {
-  DEFAULT_CHROMA_THRESHOLD,
   DEFAULT_HUE_RADIUS,
+  DEFAULT_SATURATION_THRESHOLD,
   type PreparsedMap,
   type ProcessOptions,
   type ProcessResult,
@@ -46,14 +46,11 @@ export async function processFile(
   if (!Number.isFinite(hueRadius) || hueRadius <= 0 || hueRadius > 180) {
     throw new Error(`hueRadius must be in (0, 180], got ${hueRadius}`);
   }
-  const chromaThreshold = opts.chromaThreshold ?? DEFAULT_CHROMA_THRESHOLD;
-  if (
-    !Number.isFinite(chromaThreshold) ||
-    chromaThreshold < 0 ||
-    chromaThreshold > 0.5
-  ) {
+  const satThreshold =
+    opts.saturationThreshold ?? DEFAULT_SATURATION_THRESHOLD;
+  if (!Number.isFinite(satThreshold) || satThreshold < 0 || satThreshold > 1) {
     throw new Error(
-      `chromaThreshold must be in [0, 0.5], got ${chromaThreshold}`,
+      `saturationThreshold must be in [0, 1], got ${satThreshold}`,
     );
   }
   const preserveNeutrals = opts.preserveNeutrals !== false;
@@ -78,14 +75,14 @@ export async function processFile(
     const g = data[i + 1];
     const b = data[i + 2];
 
-    const lch = rgbToOklch(r, g, b);
+    const hsl = rgbToHsl(r, g, b);
 
-    if (preserveNeutrals && lch.C < chromaThreshold) {
+    if (preserveNeutrals && hsl.s < satThreshold) {
       pixelsSkippedNeutral++;
       continue;
     }
 
-    const { index, hueDist } = findNearestByHue(lch.h, map.sourcesOklch);
+    const { index, hueDist } = findNearestByHue(hsl.h, map.sourcesHsl);
     if (hueDist >= hueRadius) {
       pixelsSkippedFar++;
       continue;
@@ -94,6 +91,7 @@ export async function processFile(
     const t = hueDist / hueRadius;
     const w = 1 - t * t * (3 - 2 * t);
 
+    const lch = rgbToOklch(r, g, b);
     const newH = lch.h + map.hueDeltas[index];
     const replaced = oklchToRgb(lch.L, lch.C, newH);
 

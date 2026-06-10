@@ -8,8 +8,8 @@ import { parseColorMap } from "./mapper.js";
 import { processFile } from "./processor.js";
 import { isImageFile, listImages } from "./walker.js";
 import {
-  DEFAULT_CHROMA_THRESHOLD,
   DEFAULT_HUE_RADIUS,
+  DEFAULT_SATURATION_THRESHOLD,
   type ColorMap,
   type PreparsedMap,
   type ProcessOptions,
@@ -21,7 +21,7 @@ interface CliOptions {
   output: string;
   map: string;
   hueRadius?: string;
-  chromaThreshold?: string;
+  saturationThreshold?: string;
   preserveNeutrals?: boolean;
   noRecursive?: boolean;
   recursive?: boolean;
@@ -189,9 +189,8 @@ async function main(): Promise<void> {
   program
     .name("change-image-theme")
     .description(
-      "Apply a color theme to PNG/JPG images: OKLCH hue-shift pixels near each source brand color toward the target. " +
-        "Lightness (perceptual) and chroma are preserved so light/dark variants stay consistent across hues. " +
-        "Low-chroma (neutral) and far-hue pixels are left unchanged.",
+      "Apply a color theme to PNG/JPG images: match pixels by HSL hue, rotate in OKLCH for perceptual lightness/chroma preservation. " +
+        "Low-saturation (neutral) and far-hue pixels are left unchanged.",
     )
     .requiredOption("-i, --input <path>", "input image file or directory")
     .requiredOption("-o, --output <path>", "output image file or directory")
@@ -201,13 +200,13 @@ async function main(): Promise<void> {
     )
     .option(
       "-r, --hue-radius <degrees>",
-      "OKLCH hue distance (0-180) within which a pixel is shifted toward the target hue (smoothstep falloff at the edge)",
+      "HSL hue distance (0-180) within which a pixel is shifted toward the target hue (smoothstep falloff at the edge)",
       String(DEFAULT_HUE_RADIUS),
     )
     .option(
-      "-t, --chroma-threshold <number>",
-      "pixels with OKLCH chroma below this value (0-0.5) are treated as neutrals and preserved",
-      String(DEFAULT_CHROMA_THRESHOLD),
+      "-t, --saturation-threshold <number>",
+      "pixels with HSL saturation below this value (0-1) are treated as neutrals and preserved",
+      String(DEFAULT_SATURATION_THRESHOLD),
     )
     .option(
       "--no-preserve-neutrals",
@@ -238,14 +237,14 @@ async function main(): Promise<void> {
     );
   }
 
-  const chromaThreshold = Number(opts.chromaThreshold);
+  const saturationThreshold = Number(opts.saturationThreshold);
   if (
-    !Number.isFinite(chromaThreshold) ||
-    chromaThreshold < 0 ||
-    chromaThreshold > 0.5
+    !Number.isFinite(saturationThreshold) ||
+    saturationThreshold < 0 ||
+    saturationThreshold > 1
   ) {
     throw new Error(
-      `-t/--chroma-threshold must be in [0, 0.5], got: ${opts.chromaThreshold}`,
+      `-t/--saturation-threshold must be in [0, 1], got: ${opts.saturationThreshold}`,
     );
   }
 
@@ -261,7 +260,7 @@ async function main(): Promise<void> {
 
   const procOpts: ProcessOptions = {
     hueRadius,
-    chromaThreshold,
+    saturationThreshold,
     preserveNeutrals,
     verbose,
   };
