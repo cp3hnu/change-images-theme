@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
-import { hslToRgb, rgbToHsl } from "./color.js";
+import { hueRotateRgb, rgbToHsl } from "./color.js";
 import { findNearestByHue } from "./mapper.js";
 import {
   DEFAULT_HUE_RADIUS,
@@ -93,8 +93,7 @@ export async function processFile(
     const t = hueDist / hueRadius;
     const w = 1 - t * t * (3 - 2 * t);
 
-    const newH = hsl.h + map.hueDeltas[index];
-    const replaced = hslToRgb(newH, hsl.s, hsl.l);
+    const replaced = hueRotateRgb(r, g, b, map.hueDeltas[index]);
 
     data[i] = Math.round(r * (1 - w) + replaced.r * w);
     data[i + 1] = Math.round(g * (1 - w) + replaced.g * w);

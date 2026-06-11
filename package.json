@@ -1,7 +1,7 @@
 {
   "name": "change-images-theme",
   "version": "1.0.0",
-  "description": "A Node.js CLI that applies a visual theme to PNG/JPG assets: shift brand hues from a hex color map while preserving saturation/lightness and alpha (rebrand / white-label friendly).",
+  "description": "A Node.js CLI that applies a visual theme to PNG/JPG assets: match brand hues in HSL, recolor with CSS hue-rotate, and preserve alpha (rebrand / white-label friendly).",
   "author": "Wei Zhao <cp3hnu@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/cp3hnu/change-images-theme#readme",

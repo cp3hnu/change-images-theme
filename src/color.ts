@@ -92,3 +92,32 @@ export function shortestHueDelta(from: number, to: number): number {
   if (d === -180) d = 180;
   return d;
 }
+
+/** CSS filter hue-rotate: rotates hue while preserving perceptual luminance. */
+export function hueRotateRgb(r: number, g: number, b: number, degrees: number): RGB {
+  const rad = (degrees * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+
+  const r1 = r / 255;
+  const g1 = g / 255;
+  const b1 = b / 255;
+
+  const nr =
+    r1 * (0.213 + cos * 0.787 - sin * 0.213) +
+    g1 * (0.715 - cos * 0.715 - sin * 0.715) +
+    b1 * (0.072 - cos * 0.072 + sin * 0.928);
+
+  const ng =
+    r1 * (0.213 - cos * 0.213 + sin * 0.143) +
+    g1 * (0.715 + cos * 0.285 + sin * 0.140) +
+    b1 * (0.072 - cos * 0.072 - sin * 0.283);
+
+  const nb =
+    r1 * (0.213 - cos * 0.213 - sin * 0.787) +
+    g1 * (0.715 - cos * 0.715 + sin * 0.715) +
+    b1 * (0.072 + cos * 0.928 + sin * 0.072);
+
+  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v * 255)));
+  return { r: clamp(nr), g: clamp(ng), b: clamp(nb) };
+}

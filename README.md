@@ -1,8 +1,8 @@
 # change-images-theme
 
-一个用于给 PNG/JPG 资源 **换主题 / 换肤** 的 Node.js CLI：用 hex 颜色映射表把品牌主色及其明暗变体整体迁到新色相，针对 **品牌重塑（rebrand）、白标、多主题皮肤** 比单纯「逐像素换色」更贴切。算法在 HSL 空间按色相归类再旋转 hue，保留每个像素原本的饱和度与明度。
+一个用于给 PNG/JPG 资源 **换主题 / 换肤** 的 Node.js CLI：用 hex 颜色映射表把品牌主色及其明暗变体整体迁到新色相，针对 **品牌重塑（rebrand）、白标、多主题皮肤** 比单纯「逐像素换色」更贴切。算法在 HSL 空间按色相归类匹配像素，再用 CSS `hue-rotate` 同款矩阵旋转色相，避免 HSL 中「只改 H、保留 S/L」导致的跨色相亮度不一致。
 
-- **HSL 色相匹配**：在 HSL 空间按色相距离判定，再做 hue 旋转，保留每个像素原本的饱和度（S）与明度（L）
+- **HSL 匹配 + hue-rotate 变换**：在 HSL 空间按色相距离判定目标像素，再用 CSS `hue-rotate` 矩阵旋转 RGB，感知亮度更一致
 - **中性色保留**：低饱和度像素（白/灰/黑）天然被跳过，文字和背景不被破坏
 - **平滑边界**：用 smoothstep 在色相半径边缘软过渡，无锐利色块
 - **Alpha 完整保留**（PNG 输出）
@@ -131,15 +131,15 @@ flowchart TD
   N -->|no| F["find nearest source<br/>by hueDistance"]
   F --> R{"hueDist >= hueRadius?"}
   R -->|yes| Keep
-  R -->|no| Rot["new_h = h + (target.h - source.h)<br/>(shortest path on hue circle)"]
-  Rot --> Back["replaced_rgb = hslToRgb(new_h, s, l)"]
+  R -->|no| Rot["delta = target.h - source.h<br/>(shortest path on hue circle)"]
+  Rot --> Back["replaced_rgb = hueRotateRgb(r, g, b, delta)<br/>(CSS hue-rotate matrix)"]
   Back --> Blend["w = 1 - smoothstep(hueDist / hueRadius)<br/>output = lerp(original, replaced, w)"]
   Blend --> Out[output pixel]
 ```
 
 ### 关键点
 
-- **保留 S 和 L**：旋转 hue 时只动色相，不动饱和度和明度。这是浅紫→浅橙、深紫→深橙能保持的核心。
+- **hue-rotate 而非 HSL 改 H**：匹配仍用 HSL 色相距离，但换色用 CSS `hue-rotate` 的 RGB 旋转矩阵，而不是 `hslToRgb(newH, s, l)`。后者在不同色相下相同 S/L 的感知亮度会漂移；hue-rotate 与浏览器 filter 一致，浅紫→浅橙、深紫→深橙的明暗关系更自然。
 - **色相按最短路径旋转**：源 `H=242°` → 目标 `H=17°`，shortest delta 是 `+135°`（顺时针，经红色），每个落入半径的像素都旋转同样的角度。
 - **smoothstep 边缘衰减 + RGB 混合**：在 hue 距离 `t = hueDist / hueRadius` 上用 `1 - smoothstep(t)` 计算权重，最终结果是原始 RGB 与"旋转后 RGB"的线性插值。这样避免了中间色相生成怪异颜色。
 - **中性色判定**：HSL 的 S（饱和度）天然量化了"色彩纯度"，低饱和度像素（真正的白/灰/黑）不会被错误归入任何品牌色。
@@ -169,7 +169,7 @@ src/
 ├── cli.ts         # CLI 入口、参数解析、目录分发、并发池
 ├── color.ts       # hex<->RGB、RGB<->HSL、hue distance/delta
 ├── mapper.ts      # 映射表预解析（同时存 RGB & HSL & hueDelta）、findNearestByHue
-├── processor.ts   # 单文件像素循环：HSL 匹配 -> hue 旋转 -> 混合
+├── processor.ts   # 单文件像素循环：HSL 匹配 -> hue-rotate 变换 -> 混合
 ├── walker.ts      # 目录递归扫描
 └── types.ts       # 类型定义与默认参数
 ```
