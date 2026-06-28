@@ -1,6 +1,6 @@
 {
-  "name": "change-image-theme",
-  "version": "0.1.0",
+  "name": "change-images-theme",
+  "version": "1.0.2",
   "description": "A Node.js CLI that applies a visual theme to PNG/JPG assets: shift brand hues from a hex color map while preserving saturation/lightness and alpha (rebrand / white-label friendly).",
   "type": "module",
   "bin": {
