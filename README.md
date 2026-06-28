@@ -1,6 +1,6 @@
 # change-images-theme
 
-[中文](README.zh-CN.md)
+English | [简体中文](./README.zh-CN.md)
 
 A Node.js CLI for **theming / reskinning** PNG/JPG assets: given a hex color map, it shifts the brand hue and all its light/dark variants to a new hue. Built for **rebrand, white-label, and multi-theme skins** rather than literal per-pixel color replacement. Pixels are classified by hue in HSL space, then recolored with the same RGB rotation matrix as CSS `hue-rotate` — avoiding the cross-hue lightness drift that comes from "change H only, keep S/L" in HSL.
 

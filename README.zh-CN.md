@@ -1,6 +1,6 @@
 # change-images-theme
 
-[English](README.md)
+[English](./README.md) | 简体中文
 
 一个用于给 PNG/JPG 资源 **换主题 / 换肤** 的 Node.js CLI：用 hex 颜色映射表把品牌主色及其明暗变体整体迁到新色相，针对 **品牌重塑（rebrand）、白标、多主题皮肤** 比单纯「逐像素换色」更贴切。算法在 HSL 空间按色相归类匹配像素，再用 CSS `hue-rotate` 同款矩阵旋转色相，避免 HSL 中「只改 H、保留 S/L」导致的跨色相亮度不一致。
 
